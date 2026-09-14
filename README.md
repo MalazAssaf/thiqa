@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Thiqa | ثقة
 
-## Getting Started
+A commitment-scoring platform for cash-on-delivery (COD) orders.
 
-First, run the development server:
+COD is the dominant payment method in the region, but merchants carry the risk: customers reject or fail to receive orders after the merchant has already paid for shipping and handling. Thiqa gives every customer a commitment score based on their COD order history, so merchants can decide who to ship to before the cost is sunk.
+
+Graduation project — Arab Open University, Computer Science, 2026-2027.
+
+## Overview
+
+The platform has two sides:
+
+**Customer app** — customers see their own commitment score, the order history behind it, and what raises or lowers it.
+
+**Merchant dashboard** — merchants see incoming orders with the customer's score attached, filter and review order history, and set a minimum score threshold for accepting COD orders.
+
+## Tech stack
+
+**Frontend** (this repo)
+- **Next.js** (App Router)
+- **TypeScript**
+- **Tailwind CSS**
+- **shadcn/ui** — component layer
+
+**Backend**
+- **Spring Boot** — REST API
+- **Spring Security** — JWT authentication
+- **Spring Data JPA** — persistence
+- **PostgreSQL**
+
+## Getting started
 
 ```bash
+git clone https://github.com/YOUR_USERNAME/thiqa.git
+cd thiqa
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project structure
