@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-bg: #f1f1f1;
+  --color-surface: #ffffff;
+  --color-text: #303030;
+  --color-divider: #e3e3e3;
+  --color-cream: #e9f7f1;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-accent: #0f6b5f;
+  --color-accent-2: #2eb56a;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-neutral-100: #1a1a1a;
+  --color-neutral-200: #303030;
+  --color-neutral-300: #4a4a4a;
+  --color-neutral-400: #5c5c5c;
+  --color-neutral-500: #616161;
+  --color-neutral-600: #757575;
+  --color-neutral-700: #a1a1a1;
+  --color-neutral-800: #e3e3e3;
+  --color-neutral-900: #f1f1f1;
+
+  --color-accent-100: #06231f;
+  --color-accent-200: #0a3a33;
+  --color-accent-300: #0e4f45;
+  --color-accent-400: #0f6b5f;
+  --color-accent-500: #158a7a;
+  --color-accent-600: #46ab99;
+  --color-accent-700: #8fd0c3;
+  --color-accent-800: #cdeae4;
+  --color-accent-900: #ecf8f5;
+
+  --color-accent2-100: #0c3b22;
+  --color-accent2-200: #115230;
+  --color-accent2-300: #166b3e;
+  --color-accent2-400: #1c8a50;
+  --color-accent2-500: #2eb56a;
+  --color-accent2-600: #62ce92;
+  --color-accent2-700: #9ce3bb;
+  --color-accent2-800: #cdf4de;
+  --color-accent2-900: #edfbf3;
+
+  --color-section-base: #06231f;
+  --color-section-glow: #0e4f45;
+  --color-section-ghost: #158a7a;
+
+  --color-warn-bg: #ffe9c2;
+  --color-warn-text: #6b4a00;
+  --color-critical-bg: #ffd9d4;
+  --color-critical-text: #8e2415;
+
+  --font-display: var(--font-outfit), sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+
+  --text-display: 56px;
+  --text-h1: 42px;
+  --text-h2: 30px;
+  --text-h3: 22px;
+  --text-h4: 20px;
+  --text-h5: 17px;
+  --text-score: 64px;
+  --text-stat: 48px;
+  --text-lead: 17px;
+  --text-body: 15px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-2xs: 12px;
+  --text-3xs: 11px;
+  --text-kicker: 10px;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-14: 56px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: 1.5;
 }
