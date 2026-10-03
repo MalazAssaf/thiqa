@@ -1,4 +1,4 @@
-import Button from "../ui/button";
+import Link from "next/link";
 
 const stats = [
   { value: "31%", label: "of cash orders come back refused" },
@@ -28,10 +28,18 @@ function Hero() {
             </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Button href="/customers"> Start shopping</Button>
-            <Button href="stores" variant="onDark">
+            <Link
+              href="/customers"
+              className="flex h-12 items-center justify-center rounded-lg bg-accent-2 px-6 text-body font-medium text-[#06231f] hover:bg-[#29a35f]"
+            >
+              Start shopping
+            </Link>
+            <Link
+              href="/stores"
+              className="flex h-12 items-center justify-center rounded-lg border border-accent-600 px-6 text-body font-medium text-accent-900 hover:bg-white/5"
+            >
               I run a store
-            </Button>
+            </Link>
           </div>
         </div>
         <div className="grid w-full max-w-250 grid-cols-1 gap-6 sm:grid-cols-3">

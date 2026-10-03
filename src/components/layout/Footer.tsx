@@ -1,4 +1,4 @@
-import Button from "../ui/button";
+import Link from "next/link";
 
 const navLinks = [
   { label: "For customers", href: "#customers" },
@@ -25,10 +25,19 @@ function Footer() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button href="/sign-up">Create an account</Button>
-            <Button href="/store/sign-up" variant="onDark">
+            <Link
+              href="/signup"
+              className="flex h-12 items-center justify-center rounded-md bg-accent2-500 px-6 text-body font-medium text-accent-100 hover:bg-accent2-600"
+            >
+              Create an account
+            </Link>
+
+            <Link
+              href="/store/signup"
+              className="flex h-12 items-center justify-center rounded-md border border-accent-600 px-6 text-body font-medium text-accent-900 hover:bg-section-glow"
+            >
               Open a store account
-            </Button>
+            </Link>
           </div>
         </div>
       </div>

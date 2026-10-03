@@ -13,13 +13,13 @@ const factors = [
   },
   {
     sign: "−",
-    style: "bg-tag-risky-bg text-tag-risky-text",
+    style: "bg-critical-bg text-tag-risky-text",
     title: "Delivery delayed by the buyer",
     body: "Rescheduled more than once",
   },
   {
     sign: "−",
-    style: "bg-tag-risky-bg text-tag-risky-text",
+    style: "bg-critical-bg text-tag-risky-text",
     title: "Refused at the door",
     body: "The order returns to origin at the store’s cost",
   },

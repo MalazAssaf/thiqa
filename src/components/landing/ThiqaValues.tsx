@@ -1,5 +1,5 @@
 import CheckRounded from "@mui/icons-material/CheckRounded";
-import Button from "../ui/button";
+import Link from "next/link";
 
 const customerBenefits = [
   {
@@ -122,9 +122,16 @@ function SideCard({
       </ul>
 
       <div className="mt-auto">
-        <Button href={href} variant={dark ? "brand" : "onLight"} size="md">
+        <Link
+          href={href}
+          className={`inline-flex items-center rounded-lg px-6 py-3.25 text-sm font-medium leading-[1.2] ${
+            dark
+              ? "bg-accent2-500 text-section-base hover:bg-[#29a35f]"
+              : "bg-accent text-cream hover:bg-[#0c5a50]"
+          }`}
+        >
           {cta}
-        </Button>
+        </Link>
       </div>
     </article>
   );
@@ -167,7 +174,7 @@ function ThiqaValues() {
             summary="Shop at any store and choose how you pay, without giving up your privacy."
             benefits={customerBenefits}
             cta="Start shopping"
-            href="#"
+            href="/signup"
           />
           <SideCard
             id="stores"
@@ -177,7 +184,7 @@ function ThiqaValues() {
             summary="Accept cash on delivery without the guesswork."
             benefits={storeBenefits}
             cta="Sell on Thiqa"
-            href="#"
+            href="/store/signup"
           />
         </div>
       </div>

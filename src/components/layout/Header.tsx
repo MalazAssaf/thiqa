@@ -30,11 +30,11 @@ function Header() {
           ))}
         </ul>
         <div className="flex items-center gap-4">
-          <Link href="#" className="text-xs font-medium text-accent-900">
+          <Link href="/login" className="text-xs font-medium text-accent-900">
             Sign in
           </Link>
           <Link
-            href="#"
+            href="/signup"
             className="rounded-md bg-accent2-500 px-4 py-2.5 text-xs font-medium text-section-base hover:bg-accent2-600"
           >
             Get started
