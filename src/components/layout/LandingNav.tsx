@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-function Header() {
+function LandingNav() {
   const navLinks = [
     { label: "For customers", href: "#customers" },
     { label: "For stores", href: "#stores" },
@@ -45,4 +45,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default LandingNav;
