@@ -42,9 +42,6 @@ export default function LoginPage() {
           <h2 className={`${heading} text-h3 leading-[1.2] tracking-[-0.22px]`}>
             Welcome back
           </h2>
-          <p className="max-w-85 text-xs leading-[1.45] text-neutral-500">
-            Log in with the phone number linked to your account.
-          </p>
 
           <div className="flex flex-col gap-1.25">
             <label htmlFor="phone" className={fieldLabel}>

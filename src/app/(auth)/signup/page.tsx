@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CheckIcon from "@mui/icons-material/Check";
 import SignupInfo from "@/src/components/auth/SignupInfo";
+import Dropdown from "@/src/components/ui/dropdown";
+import { cities } from "@/src/data/cities";
 
 const heading =
   "font-[family-name:var(--font-outfit)] font-semibold text-[#303030]";
@@ -24,7 +26,9 @@ export default function CustomerSignupPage() {
   });
 
   function goToVerify() {
-    router.push(`/signup/verify?phone=${signUpInfo.phoneNumber}`);
+    router.push(
+      `/store/signup/verify?email=${encodeURIComponent(signUpInfo.email)}`,
+    );
   }
 
   return (
@@ -85,20 +89,14 @@ export default function CustomerSignupPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-1.25">
-            <label htmlFor="city" className={fieldLabel}>
-              City
-            </label>
-            <input
-              id="city"
-              placeholder="Riyadh"
-              value={signUpInfo.city}
-              onChange={(e) =>
-                setSignUpInfo({ ...signUpInfo, city: e.target.value })
-              }
-              className={control}
-            />
-          </div>
+          <Dropdown
+            id="city"
+            label="City"
+            placeholder="Select a city"
+            options={cities}
+            value={signUpInfo.city}
+            onChange={(value) => setSignUpInfo({ ...signUpInfo, city: value })}
+          />
 
           <div className="flex flex-col gap-1.25">
             <label htmlFor="email" className={fieldLabel}>
