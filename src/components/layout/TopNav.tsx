@@ -1,17 +1,19 @@
+"use client";
+
 import Link from "next/link";
-import PersonIcon from "@mui/icons-material/Person";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import PersonIcon from "@mui/icons-material/Person";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 
 type TopNavProps = {
-  viewing?: "customer" | "store";
-  minimal?: boolean; // true on login/sign-up: logo only
+  minimal?: boolean; // true: logo only
 };
 
-export default function TopNav({
-  viewing = "customer",
-  minimal = false,
-}: TopNavProps) {
+export default function TopNav({ minimal = false }: TopNavProps) {
+  const pathname = usePathname();
+  const viewing = pathname.startsWith("/store") ? "store" : "customer";
+
   const option =
     "flex items-center gap-1.5 rounded-[7px] border px-3 py-1.75 text-[13px] text-cream";
   const active = "border-cream/50 bg-cream/14";
@@ -49,7 +51,7 @@ export default function TopNav({
                 Customer
               </Link>
               <Link
-                href="/store/signup"
+                href="/store/login"
                 className={`${option} ${viewing === "store" ? active : inactive}`}
               >
                 <StorefrontOutlinedIcon sx={{ fontSize: 15 }} />
