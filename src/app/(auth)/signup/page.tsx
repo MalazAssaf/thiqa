@@ -3,20 +3,34 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import CheckIcon from "@mui/icons-material/Check";
+import ErrorIcon from "@mui/icons-material/Error";
 import SignupInfo from "@/src/components/auth/SignupInfo";
-import Dropdown from "@/src/components/ui/dropdown";
+import Dropdown from "@/src/components/ui/Dropdown";
 import { cities } from "@/src/data/cities";
+import { api } from "@/src/lib/api";
 
 const heading =
   "font-[family-name:var(--font-outfit)] font-semibold text-[#303030]";
 const fieldLabel = "text-xs leading-[1.3] text-[#616161]";
 const control =
   "h-10 w-full min-w-0 rounded-lg border border-[#e3e3e3] bg-white px-2.5 text-base text-[#303030] placeholder:text-[#757575] outline-none focus:border-[#0f6b5f] focus:ring-2 focus:ring-[#0f6b5f]/15 sm:h-9 sm:text-sm";
+const controlError =
+  "border-critical-text focus:border-critical-text focus:ring-critical-text/15";
+const errorText = "text-xs leading-normal text-critical-text";
+
+type Field = "fullName" | "password" | "city" | "email" | "phoneNumber";
+
+// "55 123 4567" -> "0551234567"
+function toLocalPhone(input: string) {
+  return "0" + input.replace(/\D/g, "").replace(/^0/, "");
+}
 
 export default function CustomerSignupPage() {
   const router = useRouter();
   const [agreed, setAgreed] = useState(true);
+  const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [signUpInfo, setSignUpInfo] = useState({
     fullName: "",
     password: "",
@@ -25,10 +39,43 @@ export default function CustomerSignupPage() {
     phoneNumber: "",
   });
 
-  function goToVerify() {
-    router.push(
-      `/store/signup/verify?email=${encodeURIComponent(signUpInfo.email)}`,
-    );
+  const signup = useMutation({
+    mutationFn: () =>
+      api("/api/auth/customer/signup", {
+        method: "POST",
+        body: JSON.stringify({
+          fullName: signUpInfo.fullName.trim(),
+          email: signUpInfo.email.trim(),
+          phone: toLocalPhone(signUpInfo.phoneNumber),
+          city: signUpInfo.city,
+          password: signUpInfo.password,
+        }),
+      }),
+    onSuccess: () =>
+      router.push(
+        `/signup/verify?email=${encodeURIComponent(signUpInfo.email.trim())}`,
+      ),
+  });
+
+  function update(field: Field, value: string) {
+    setSignUpInfo({ ...signUpInfo, [field]: value });
+    setErrors({ ...errors, [field]: undefined });
+    signup.reset();
+  }
+
+  function validate() {
+    const e: Partial<Record<Field, string>> = {};
+    if (signUpInfo.fullName.trim().length < 3)
+      e.fullName = "Enter your full name.";
+    if (signUpInfo.password.length < 6)
+      e.password = "Password must be at least 6 characters.";
+    if (!signUpInfo.city) e.city = "Select your city.";
+    if (!/^\S+@\S+\.\S+$/.test(signUpInfo.email.trim()))
+      e.email = "Enter a valid email.";
+    if (!/^05\d{8}$/.test(toLocalPhone(signUpInfo.phoneNumber)))
+      e.phoneNumber = "Enter a valid mobile number.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
   }
 
   return (
@@ -66,11 +113,11 @@ export default function CustomerSignupPage() {
               id="fullName"
               placeholder="Maha Alharbi"
               value={signUpInfo.fullName}
-              onChange={(e) =>
-                setSignUpInfo({ ...signUpInfo, fullName: e.target.value })
-              }
-              className={control}
+              onChange={(e) => update("fullName", e.target.value)}
+              aria-invalid={!!errors.fullName}
+              className={`${control} ${errors.fullName ? controlError : ""}`}
             />
+            {errors.fullName && <p className={errorText}>{errors.fullName}</p>}
           </div>
 
           <div className="flex flex-col gap-1.25">
@@ -80,23 +127,26 @@ export default function CustomerSignupPage() {
             <input
               id="password"
               type="password"
-              placeholder="At least 8 characters"
+              placeholder="At least 6 characters"
               value={signUpInfo.password}
-              onChange={(e) =>
-                setSignUpInfo({ ...signUpInfo, password: e.target.value })
-              }
-              className={control}
+              onChange={(e) => update("password", e.target.value)}
+              aria-invalid={!!errors.password}
+              className={`${control} ${errors.password ? controlError : ""}`}
             />
+            {errors.password && <p className={errorText}>{errors.password}</p>}
           </div>
 
-          <Dropdown
-            id="city"
-            label="City"
-            placeholder="Select a city"
-            options={cities}
-            value={signUpInfo.city}
-            onChange={(value) => setSignUpInfo({ ...signUpInfo, city: value })}
-          />
+          <div className="flex flex-col gap-1.25">
+            <Dropdown
+              id="city"
+              label="City"
+              placeholder="Select a city"
+              options={cities}
+              value={signUpInfo.city}
+              onChange={(value) => update("city", value)}
+            />
+            {errors.city && <p className={errorText}>{errors.city}</p>}
+          </div>
 
           <div className="flex flex-col gap-1.25">
             <label htmlFor="email" className={fieldLabel}>
@@ -107,11 +157,11 @@ export default function CustomerSignupPage() {
               type="email"
               placeholder="example@gmail.com"
               value={signUpInfo.email}
-              onChange={(e) =>
-                setSignUpInfo({ ...signUpInfo, email: e.target.value })
-              }
-              className={control}
+              onChange={(e) => update("email", e.target.value)}
+              aria-invalid={!!errors.email}
+              className={`${control} ${errors.email ? controlError : ""}`}
             />
+            {errors.email && <p className={errorText}>{errors.email}</p>}
           </div>
 
           <div className="flex flex-col gap-1.25">
@@ -125,14 +175,17 @@ export default function CustomerSignupPage() {
               <input
                 id="phone"
                 type="tel"
+                inputMode="numeric"
                 placeholder="55 123 4567"
                 value={signUpInfo.phoneNumber}
-                onChange={(e) =>
-                  setSignUpInfo({ ...signUpInfo, phoneNumber: e.target.value })
-                }
-                className={control}
+                onChange={(e) => update("phoneNumber", e.target.value)}
+                aria-invalid={!!errors.phoneNumber}
+                className={`${control} ${errors.phoneNumber ? controlError : ""}`}
               />
             </div>
+            {errors.phoneNumber && (
+              <p className={errorText}>{errors.phoneNumber}</p>
+            )}
           </div>
 
           <label className="flex cursor-pointer items-start gap-2">
@@ -158,16 +211,27 @@ export default function CustomerSignupPage() {
             </span>
           </label>
 
+          {signup.error && (
+            <p
+              role="alert"
+              className={`flex items-center gap-1.5 ${errorText}`}
+            >
+              <ErrorIcon sx={{ fontSize: 16 }} />
+              {signup.error.message}
+            </p>
+          )}
+
           <button
             type="button"
-            onClick={goToVerify}
-            className="flex h-11 w-full items-center justify-center rounded-lg border border-[#0f6b5f] bg-[#0f6b5f] px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-[#0c5a50] sm:h-9"
+            onClick={() => validate() && signup.mutate()}
+            disabled={!agreed || signup.isPending}
+            className="flex h-11 w-full items-center justify-center rounded-lg border border-[#0f6b5f] bg-[#0f6b5f] px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-[#0c5a50] disabled:opacity-60 sm:h-9"
           >
-            Send verification code
+            {signup.isPending ? "Sending code..." : "Send verification code"}
           </button>
 
           <p className="text-3xs leading-[1.4] text-neutral-600 sm:max-w-85">
-            We&apos;ll text you a 4-digit code to verify your Email.
+            We&apos;ll email you a 4-digit code to verify your email.
           </p>
         </section>
       </div>

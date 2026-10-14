@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StoreSignupInfo from "@/src/components/auth/StoreSignUpInfo";
-import Dropdown from "@/src/components/ui/dropdown";
+import Dropdown from "@/src/components/ui/Dropdown";
 import { cities } from "@/src/data/cities";
 
 const fieldLabel = "text-2xs leading-[1.3] text-neutral-500";

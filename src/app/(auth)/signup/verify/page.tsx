@@ -2,7 +2,11 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import ErrorIcon from "@mui/icons-material/Error";
 import SignupInfo from "@/src/components/auth/SignupInfo";
+import Snackbar from "@/src/components/ui/Snackbar";
+import { api } from "@/src/lib/api";
 
 const CODE_LENGTH = 4;
 
@@ -10,6 +14,8 @@ const heading =
   "font-[family-name:var(--font-outfit)] font-semibold text-[#303030]";
 const card =
   "flex w-full flex-col gap-3 rounded-xl bg-white p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)] sm:max-w-120 sm:p-6 lg:w-100 lg:max-w-none lg:shrink-0";
+const ghostButton =
+  "flex h-11 w-full items-center justify-center rounded-lg px-1 text-sm font-medium leading-[1.2] text-[#0f6b5f] hover:bg-accent-900 disabled:opacity-60 sm:h-9";
 
 export default function VerifyPage() {
   return (
@@ -30,7 +36,24 @@ function VerifyCard() {
   const searchParams = useSearchParams();
   const [code, setCode] = useState("");
 
-  const shownEmail = searchParams.get("email") || "example@gmail.com";
+  const email = searchParams.get("email") ?? "";
+
+  const verify = useMutation({
+    mutationFn: () =>
+      api(`/api/auth/verify?email=${email}&code=${code}`, {
+        method: "POST",
+      }),
+    onSuccess: () => router.push("/login"),
+  });
+
+  const resend = useMutation({
+    mutationFn: () =>
+      api(`/api/auth/resend-code?email=${encodeURIComponent(email)}`, {
+        method: "POST",
+      }),
+  });
+
+  const error = verify.error ?? resend.error;
 
   return (
     <section className={card}>
@@ -43,7 +66,7 @@ function VerifyCard() {
       <p className="text-[13px] leading-normal text-neutral-400">
         Sent to{" "}
         <span dir="ltr" className="whitespace-nowrap">
-          {shownEmail}
+          {email}
         </span>
       </p>
 
@@ -60,25 +83,58 @@ function VerifyCard() {
           autoFocus
           placeholder={"•".repeat(CODE_LENGTH)}
           value={code}
-          onChange={(e) => setCode(e.target.value)}
+          onChange={(e) => {
+            setCode(e.target.value.replace(/\D/g, ""));
+            verify.reset();
+          }}
+          aria-invalid={!!verify.error}
           dir="ltr"
-          className={`h-12 w-full rounded-lg border border-[#0f6b5f] bg-white pl-2.5 text-center ${heading} text-xl leading-[1.2] tracking-[10px] placeholder:text-[#c4c4c4] outline-none focus:ring-2 focus:ring-[#0f6b5f]/15`}
+          className={`h-12 w-full rounded-lg border bg-white pl-2.5 text-center ${heading} text-xl leading-[1.2] tracking-[10px] placeholder:text-[#c4c4c4] outline-none focus:ring-2 ${
+            verify.error
+              ? "border-critical-text focus:ring-critical-text/15"
+              : "border-[#0f6b5f] focus:ring-[#0f6b5f]/15"
+          }`}
         />
+        {error && (
+          <p
+            role="alert"
+            className="flex items-center gap-1.5 text-xs leading-normal text-critical-text"
+          >
+            <ErrorIcon sx={{ fontSize: 16 }} />
+            {error.message}
+          </p>
+        )}
       </div>
 
       <button
         type="button"
-        className="flex h-11 w-full items-center justify-center rounded-lg border border-[#0f6b5f] bg-[#0f6b5f] px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-[#0c5a50] sm:h-9"
+        onClick={() => verify.mutate()}
+        disabled={code.length !== CODE_LENGTH || verify.isPending}
+        className="flex h-11 w-full items-center justify-center rounded-lg border border-[#0f6b5f] bg-[#0f6b5f] px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-[#0c5a50] disabled:opacity-60 sm:h-9"
       >
-        Verify and create account
+        {verify.isPending ? "Verifying..." : "Verify and create account"}
       </button>
+
       <button
         type="button"
-        onClick={() => router.back()}
-        className="flex h-11 w-full items-center justify-center rounded-lg px-1 text-sm font-medium leading-[1.2] text-[#0f6b5f] hover:bg-accent-900 sm:h-9"
+        onClick={() => {
+          setCode("");
+          verify.reset();
+          resend.mutate();
+        }}
+        disabled={resend.isPending}
+        className={ghostButton}
       >
-        Change Email
+        {resend.isPending ? "Sending..." : "Resend code"}
       </button>
+
+      {resend.isSuccess && (
+        <Snackbar
+          type="success"
+          message="A new code was sent to your email."
+          onClose={resend.reset}
+        />
+      )}
     </section>
   );
 }
