@@ -2,38 +2,85 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import ErrorIcon from "@mui/icons-material/Error";
 import SignupInfo from "@/src/components/auth/SignupInfo";
+import { api } from "@/src/lib/api";
+import { isValidPhone, toLocalPhone } from "@/src/lib/phone";
 
-const heading =
-  "font-[family-name:var(--font-outfit)] font-semibold text-[#303030]";
-const fieldLabel = "text-xs leading-[1.3] text-[#616161]";
+const heading = "font-display font-semibold text-text";
+const fieldLabel = "text-xs leading-[1.3] text-neutral-500";
 const control =
-  "h-10 w-full min-w-0 rounded-lg border border-[#e3e3e3] bg-white px-2.5 text-base text-[#303030] placeholder:text-[#757575] outline-none focus:border-[#0f6b5f] focus:ring-2 focus:ring-[#0f6b5f]/15 sm:h-9 sm:text-sm";
+  "h-10 w-full min-w-0 rounded-md border border-divider bg-surface px-2.5 text-base text-text placeholder:text-neutral-600 outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 sm:h-9 sm:text-sm";
+const controlError =
+  "border-critical-text focus:border-critical-text focus:ring-critical-text/15";
+const errorText = "text-xs leading-normal text-critical-text";
+
+type Field = "phoneNumber" | "password";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [loginInfo, setLoginInfo] = useState({
     phoneNumber: "",
     password: "",
   });
 
+  const login = useMutation({
+    mutationFn: () =>
+      api("/api/auth/customer/login", {
+        method: "POST",
+        body: JSON.stringify({
+          phone: toLocalPhone(loginInfo.phoneNumber),
+          password: loginInfo.password,
+        }),
+      }),
+    onSuccess: () => router.push("/customer/stores"),
+  });
+
+  function update(field: Field, value: string) {
+    setLoginInfo({ ...loginInfo, [field]: value });
+    setErrors({ ...errors, [field]: undefined });
+    login.reset();
+  }
+
+  function validate() {
+    const e: Partial<Record<Field, string>> = {};
+    if (!isValidPhone(loginInfo.phoneNumber))
+      e.phoneNumber = "Enter a valid mobile number.";
+    if (!loginInfo.password) e.password = "Enter your password.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (validate()) login.mutate();
+  }
+
   return (
-    <main className="min-h-[calc(100dvh-78px)] bg-[#f1f1f1] font-(family-name:--font-inter)">
-      <div className="mx-auto flex w-full max-w-360 flex-col gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:flex-row items-center justify-center lg:gap-14 lg:px-15 lg:py-10">
+    <main className="min-h-[calc(100dvh-78px)] bg-bg font-sans">
+      <div className="mx-auto flex w-full max-w-360 flex-col items-center justify-center gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:flex-row lg:gap-14 lg:px-15 lg:py-10">
         <SignupInfo />
 
         {/* Card */}
-        <section className="flex w-full flex-col gap-3 rounded-xl bg-white p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)] sm:max-w-120 sm:p-6 lg:w-100 lg:max-w-none lg:shrink-0">
+        <form
+          onSubmit={onSubmit}
+          noValidate
+          className="flex w-full flex-col gap-3 rounded-lg bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)] sm:max-w-120 sm:p-6 lg:w-100 lg:max-w-none lg:shrink-0"
+        >
           {/* Log in / Sign up */}
-          <div className="flex w-full overflow-hidden rounded-lg border border-[#e3e3e3] bg-white">
+          <div className="flex w-full overflow-hidden rounded-md border border-divider bg-surface">
             <span
               aria-current="page"
-              className="flex flex-1 items-center justify-center border border-[#0f6b5f] bg-accent-900 px-3.5 py-2 text-[13px] leading-normal text-[#0f6b5f]"
+              className="flex flex-1 items-center justify-center border border-accent bg-accent-900 px-3.5 py-2 text-xs leading-normal text-accent"
             >
               Log in
             </span>
             <Link
               href="/signup"
-              className="flex flex-1 items-center justify-center px-3.5 py-2 text-[13px] leading-normal text-[#303030]"
+              className="flex flex-1 items-center justify-center px-3.5 py-2 text-xs leading-normal text-text"
             >
               Sign up
             </Link>
@@ -48,20 +95,25 @@ export default function LoginPage() {
               Mobile number
             </label>
             <div className="flex gap-1.5" dir="ltr">
-              <span className="flex h-10 w-15.5 shrink-0 items-center justify-center rounded-lg border border-[#e3e3e3] bg-white text-sm text-neutral-500 sm:h-9">
+              <span className="flex h-10 w-15.5 shrink-0 items-center justify-center rounded-md border border-divider bg-surface text-sm text-neutral-500 sm:h-9">
                 +966
               </span>
               <input
                 id="phone"
                 type="tel"
+                inputMode="numeric"
+                maxLength={10}
+                autoComplete="tel-national"
                 placeholder="55 123 4567"
                 value={loginInfo.phoneNumber}
-                onChange={(e) =>
-                  setLoginInfo({ ...loginInfo, phoneNumber: e.target.value })
-                }
-                className={control}
+                onChange={(e) => update("phoneNumber", e.target.value)}
+                aria-invalid={!!errors.phoneNumber}
+                className={`${control} ${errors.phoneNumber ? controlError : ""}`}
               />
             </div>
+            {errors.phoneNumber && (
+              <p className={errorText}>{errors.phoneNumber}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.25">
@@ -69,29 +121,41 @@ export default function LoginPage() {
               <label htmlFor="password" className={fieldLabel}>
                 Password
               </label>
-              <Link href="/forgot-password" className="text-xs text-[#0f6b5f]">
+              <Link href="/forgot-password" className="text-xs text-accent">
                 Forgot password?
               </Link>
             </div>
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               placeholder="••••••••"
               value={loginInfo.password}
-              onChange={(e) =>
-                setLoginInfo({ ...loginInfo, password: e.target.value })
-              }
-              className={control}
+              onChange={(e) => update("password", e.target.value)}
+              aria-invalid={!!errors.password}
+              className={`${control} ${errors.password ? controlError : ""}`}
             />
+            {errors.password && <p className={errorText}>{errors.password}</p>}
           </div>
 
+          {login.error && (
+            <p
+              role="alert"
+              className={`flex items-center gap-1.5 ${errorText}`}
+            >
+              <ErrorIcon sx={{ fontSize: 16 }} />
+              {login.error.message}
+            </p>
+          )}
+
           <button
-            type="button"
-            className="flex h-11 w-full items-center justify-center rounded-lg border border-[#0f6b5f] bg-[#0f6b5f] px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-[#0c5a50] sm:h-9"
+            type="submit"
+            disabled={login.isPending}
+            className="flex h-11 w-full items-center justify-center rounded-md border border-accent bg-accent px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-accent-300 disabled:opacity-60 sm:h-9"
           >
-            Log in
+            {login.isPending ? "Logging in..." : "Log in"}
           </button>
-        </section>
+        </form>
       </div>
     </main>
   );
