@@ -10,6 +10,7 @@ import SignupInfo from "@/src/components/auth/SignupInfo";
 import Dropdown from "@/src/components/ui/Dropdown";
 import { cities } from "@/src/data/cities";
 import { api } from "@/src/lib/api";
+import { toLocalPhone } from "@/src/lib/phone";
 
 const heading =
   "font-[family-name:var(--font-outfit)] font-semibold text-[#303030]";
@@ -21,11 +22,6 @@ const controlError =
 const errorText = "text-xs leading-normal text-critical-text";
 
 type Field = "fullName" | "password" | "city" | "email" | "phoneNumber";
-
-// "55 123 4567" -> "0551234567"
-function toLocalPhone(input: string) {
-  return "0" + input.replace(/\D/g, "").replace(/^0/, "");
-}
 
 export default function CustomerSignupPage() {
   const router = useRouter();
