@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "./providers";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -25,7 +26,7 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} ${inter.variable} ${plexMono.variable} antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
