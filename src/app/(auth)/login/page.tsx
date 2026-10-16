@@ -29,14 +29,25 @@ export default function LoginPage() {
 
   const login = useMutation({
     mutationFn: () =>
-      api("/api/auth/customer/login", {
-        method: "POST",
-        body: JSON.stringify({
-          phone: toLocalPhone(loginInfo.phoneNumber),
-          password: loginInfo.password,
-        }),
-      }),
-    onSuccess: () => router.push("/customer/stores"),
+      api<{ email: string; emailVerified: boolean }>(
+        "/api/auth/customer/login",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            phone: toLocalPhone(loginInfo.phoneNumber),
+            password: loginInfo.password,
+          }),
+        },
+      ),
+    onSuccess: (customer) => {
+      if (!customer.emailVerified) {
+        router.push(
+          `/signup/verify?email=${encodeURIComponent(customer.email)}`,
+        );
+      } else {
+        router.push("/customer/stores");
+      }
+    },
   });
 
   function update(field: Field, value: string) {
