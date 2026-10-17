@@ -10,13 +10,12 @@ import SignupInfo from "@/src/components/auth/SignupInfo";
 import Dropdown from "@/src/components/ui/Dropdown";
 import { cities } from "@/src/data/cities";
 import { api } from "@/src/lib/api";
-import { toLocalPhone } from "@/src/lib/phone";
+import { isValidPhone, toLocalPhone } from "@/src/lib/phone";
 
-const heading =
-  "font-[family-name:var(--font-outfit)] font-semibold text-[#303030]";
-const fieldLabel = "text-xs leading-[1.3] text-[#616161]";
+const heading = "font-display font-semibold text-text";
+const fieldLabel = "text-xs leading-[1.3] text-neutral-500";
 const control =
-  "h-10 w-full min-w-0 rounded-lg border border-[#e3e3e3] bg-white px-2.5 text-base text-[#303030] placeholder:text-[#757575] outline-none focus:border-[#0f6b5f] focus:ring-2 focus:ring-[#0f6b5f]/15 sm:h-9 sm:text-sm";
+  "h-10 w-full min-w-0 rounded-md border border-divider bg-surface px-2.5 text-base text-text placeholder:text-neutral-600 outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 sm:h-9 sm:text-sm";
 const controlError =
   "border-critical-text focus:border-critical-text focus:ring-critical-text/15";
 const errorText = "text-xs leading-normal text-critical-text";
@@ -68,30 +67,30 @@ export default function CustomerSignupPage() {
     if (!signUpInfo.city) e.city = "Select your city.";
     if (!/^\S+@\S+\.\S+$/.test(signUpInfo.email.trim()))
       e.email = "Enter a valid email.";
-    if (!/^05\d{8}$/.test(toLocalPhone(signUpInfo.phoneNumber)))
+    if (!isValidPhone(signUpInfo.phoneNumber))
       e.phoneNumber = "Enter a valid mobile number.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
   return (
-    <main className="min-h-[calc(100dvh-68px)] bg-[#f1f1f1] font-(family-name:--font-inter)">
-      <div className="mx-auto flex w-full max-w-360 flex-col gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:flex-row items-center justify-center lg:gap-14 lg:px-15 lg:py-10">
+    <main className="min-h-[calc(100dvh-68px)] bg-bg font-sans">
+      <div className="mx-auto flex w-full max-w-360 flex-col items-center justify-center gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:flex-row lg:gap-14 lg:px-15 lg:py-10">
         <SignupInfo />
 
         {/* Card */}
-        <section className="flex w-full flex-col gap-3 rounded-xl bg-white p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)] sm:max-w-120 sm:p-6 lg:w-100 lg:max-w-none lg:shrink-0">
+        <section className="flex w-full flex-col gap-3 rounded-lg bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)] sm:max-w-120 sm:p-6 lg:w-100 lg:max-w-none lg:shrink-0">
           {/* Log in / Sign up */}
-          <div className="flex w-full overflow-hidden rounded-lg border border-[#e3e3e3] bg-white">
+          <div className="flex w-full overflow-hidden rounded-md border border-divider bg-surface">
             <Link
               href="/login"
-              className="flex flex-1 items-center justify-center px-3.5 py-2 text-[13px] leading-normal text-[#303030]"
+              className="flex flex-1 items-center justify-center px-3.5 py-2 text-xs leading-normal text-text"
             >
               Log in
             </Link>
             <span
               aria-current="page"
-              className="flex flex-1 items-center justify-center border border-[#0f6b5f] bg-accent-900 px-3.5 py-2 text-[13px] leading-normal text-[#0f6b5f]"
+              className="flex flex-1 items-center justify-center border border-accent bg-accent-900 px-3.5 py-2 text-xs leading-normal text-accent"
             >
               Sign up
             </span>
@@ -107,6 +106,7 @@ export default function CustomerSignupPage() {
             </label>
             <input
               id="fullName"
+              autoComplete="name"
               placeholder="Maha Alharbi"
               value={signUpInfo.fullName}
               onChange={(e) => update("fullName", e.target.value)}
@@ -123,6 +123,7 @@ export default function CustomerSignupPage() {
             <input
               id="password"
               type="password"
+              autoComplete="new-password"
               placeholder="At least 6 characters"
               value={signUpInfo.password}
               onChange={(e) => update("password", e.target.value)}
@@ -151,6 +152,7 @@ export default function CustomerSignupPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               placeholder="example@gmail.com"
               value={signUpInfo.email}
               onChange={(e) => update("email", e.target.value)}
@@ -165,13 +167,15 @@ export default function CustomerSignupPage() {
               Mobile number
             </label>
             <div className="flex gap-1.5" dir="ltr">
-              <span className="flex h-10 w-15.5 shrink-0 items-center justify-center rounded-lg border border-[#e3e3e3] bg-white text-sm text-neutral-500 sm:h-9">
+              <span className="flex h-10 w-15.5 shrink-0 items-center justify-center rounded-md border border-divider bg-surface text-sm text-neutral-500 sm:h-9">
                 +966
               </span>
               <input
                 id="phone"
                 type="tel"
+                maxLength={10}
                 inputMode="numeric"
+                autoComplete="tel-national"
                 placeholder="55 123 4567"
                 value={signUpInfo.phoneNumber}
                 onChange={(e) => update("phoneNumber", e.target.value)}
@@ -193,13 +197,13 @@ export default function CustomerSignupPage() {
             />
             <span
               aria-hidden
-              className={`mt-px flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                agreed
-                  ? "border-[#0f6b5f] bg-[#0f6b5f]"
-                  : "border-[#e3e3e3] bg-white"
+              className={`mt-px flex size-5 shrink-0 items-center justify-center rounded-full border-2 peer-focus-visible:ring-2 peer-focus-visible:ring-accent/30 ${
+                agreed ? "border-accent bg-accent" : "border-divider bg-surface"
               }`}
             >
-              {agreed && <CheckIcon sx={{ fontSize: 18, color: "white" }} />}
+              {agreed && (
+                <CheckIcon sx={{ fontSize: 18 }} className="text-surface" />
+              )}
             </span>
             <span className="text-xs leading-[1.45] text-neutral-500 sm:max-w-75">
               I understand my delivery outcomes build a commitment score that
@@ -221,7 +225,7 @@ export default function CustomerSignupPage() {
             type="button"
             onClick={() => validate() && signup.mutate()}
             disabled={!agreed || signup.isPending}
-            className="flex h-11 w-full items-center justify-center rounded-lg border border-[#0f6b5f] bg-[#0f6b5f] px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-[#0c5a50] disabled:opacity-60 sm:h-9"
+            className="flex h-11 w-full items-center justify-center rounded-md border border-accent bg-accent px-3 text-sm font-medium leading-[1.2] text-cream hover:bg-accent-300 disabled:opacity-60 sm:h-9"
           >
             {signup.isPending ? "Sending code..." : "Send verification code"}
           </button>
