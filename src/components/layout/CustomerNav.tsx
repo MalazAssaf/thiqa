@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import MenuIcon from "@mui/icons-material/Menu";
+import LogoutButton from "../auth/LogoutButton";
+import { useCart } from "../cart/CartProvider";
 
 const links = [
   { label: "Stores", href: "/customer/stores" },
@@ -19,8 +21,9 @@ const pill =
 const active = "border-cream/50 bg-cream/14 font-medium";
 const inactive = "border-transparent text-cream/70 hover:text-cream";
 
-export default function CustomerNav({ cartCount = 0 }: { cartCount?: number }) {
+export default function CustomerNav() {
   const pathname = usePathname();
+  const { count: cartCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
 
@@ -58,13 +61,16 @@ export default function CustomerNav({ cartCount = 0 }: { cartCount?: number }) {
         {/* Cart */}
         <Link
           href="/customer/cart"
-          className={`${pill} gap-2 text-[13px] ${isActive("/customer/cart") ? active : "border-cream/28 hover:bg-cream/8"}`}
+          aria-label={`Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
+          className={`${pill} gap-2 text-xs ${isActive("/customer/cart") ? active : "border-cream/28 hover:bg-cream/8"}`}
         >
           <ShoppingCartOutlinedIcon sx={{ fontSize: 16 }} />
           <span className="hidden sm:inline">Cart</span>
-          <span className="rounded-full bg-accent2-500 px-1.5 text-3xs font-medium text-accent-100">
-            {cartCount}
-          </span>
+          {cartCount > 0 && (
+            <span className="rounded-full bg-accent2-500 px-1.5 text-3xs font-medium tabular-nums text-accent-100">
+              {cartCount}
+            </span>
+          )}
         </Link>
 
         {/* Account */}
@@ -89,16 +95,15 @@ export default function CustomerNav({ cartCount = 0 }: { cartCount?: number }) {
             <div className="absolute right-0 top-full z-30 mt-2 flex w-40 flex-col rounded-md border border-divider bg-surface p-1 shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)]">
               <Link
                 href="/customer/profile"
-                className="rounded-sm px-2.5 py-2 text-sm text-text hover:bg-neutral-900"
+                onClick={() => setAccountOpen(false)}
+                className="rounded-sm px-2.5 py-2 text-sm text-text hover:bg-accent-800"
               >
                 Profile
               </Link>
-              <Link
-                href="/"
-                className="rounded-sm px-2.5 py-2 text-sm text-text hover:bg-neutral-900"
-              >
-                Log out
-              </Link>
+              <LogoutButton
+                redirectTo="/login"
+                className="flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-sm text-critical-text hover:bg-critical-bg/50 disabled:opacity-60"
+              />
             </div>
           )}
         </div>
