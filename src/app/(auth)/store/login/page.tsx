@@ -42,7 +42,7 @@ export default function StoreLoginPage() {
           `/store/signup/verify?email=${encodeURIComponent(store.email)}`,
         );
       } else {
-        // router.push("/store");
+        router.push("/store");
       }
     },
   });

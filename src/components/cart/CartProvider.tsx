@@ -56,17 +56,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setCart(JSON.parse(saved));
-    } catch {
-      /* ignore broken or blocked storage */
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
-    } catch {
-      /* ignore */
-    }
+    } catch {}
   }, [cart]);
 
   function add(
