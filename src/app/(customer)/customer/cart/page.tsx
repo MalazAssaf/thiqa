@@ -1,27 +1,83 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import { useCart } from "@/src/components/cart/CartProvider";
-import { BASE_URL } from "@/src/lib/api";
+import { api, BASE_URL } from "@/src/lib/api";
+
+type PaymentMethod = "COD" | "CARD";
 
 const price = new Intl.NumberFormat("en-SA", {
   style: "currency",
   currency: "SAR",
 });
 
+const methodLabel: Record<PaymentMethod, string> = {
+  COD: "Cash on delivery",
+  CARD: "Card, pay now",
+};
+
+const panel =
+  "rounded-lg bg-surface shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)]";
+const input =
+  "h-9 w-full rounded-md border border-divider bg-surface px-2.5 text-sm text-text tabular-nums placeholder:text-neutral-700 focus:border-accent focus:outline-none";
+
 export default function CartPage() {
   const cart = useCart();
+  const router = useRouter();
+
+  const [method, setMethod] = useState<PaymentMethod>("COD");
+  const [card, setCard] = useState({ number: "", expiry: "", cvv: "" });
+
+  // Prototype only: card details are checked here and never sent to the backend
+  const cardValid =
+    card.number.replace(/\s/g, "").length === 16 &&
+    /^(0[1-9]|1[0-2])\/\d{2}$/.test(card.expiry) &&
+    card.cvv.length === 3;
+
+  const placeOrder = useMutation({
+    mutationFn: () =>
+      api<{ id: number }>("/api/customer/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          storeId: cart.store?.id,
+          paymentMethod: method,
+          items: cart.items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+          })),
+        }),
+      }),
+    onSuccess: () => {
+      cart.clear();
+      router.push("/customer/orders");
+    },
+  });
+
+  const canPlace =
+    cart.items.length > 0 &&
+    !placeOrder.isPending &&
+    (method === "COD" || cardValid);
 
   return (
     <main className="min-h-[calc(100dvh-68px)] bg-bg pb-16">
-      <div className="container-page flex flex-col gap-6 pt-8">
-        <h1 className="font-display text-h2 font-semibold leading-[1.15] text-text">
-          Cart
-        </h1>
+      <div className="container-page flex flex-col gap-5 pt-8">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="font-display text-h2 font-semibold leading-[1.15] text-text">
+            Cart
+          </h1>
+          <p className="text-sm text-neutral-500">
+            One store per order. Choose how you want to pay.
+          </p>
+        </div>
 
         {cart.items.length === 0 ? (
           <div className="rounded-lg border border-dashed border-divider bg-surface px-6 py-12 text-center">
@@ -35,32 +91,32 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-            {/* Items */}
-            <section className="flex min-w-0 flex-1 flex-col rounded-lg bg-surface shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)]">
-              <Link
-                href={`/customer/stores/${cart.store?.id}`}
-                className="flex items-center gap-2 border-b border-divider px-4 py-3 text-sm font-medium text-text hover:text-accent"
-              >
-                <StorefrontOutlinedIcon
-                  sx={{ fontSize: 18 }}
-                  className="text-neutral-500"
-                />
-                {cart.store?.name}
-              </Link>
+            {/* Store group */}
+            <section
+              className={`flex min-w-0 flex-1 flex-col gap-3 p-5 ${panel}`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  href={`/customer/stores/${cart.store?.id}`}
+                  className="font-display text-h5 font-semibold text-text hover:text-accent"
+                >
+                  {cart.store?.name}
+                </Link>
+                <span className="text-sm tabular-nums text-neutral-500">
+                  {price.format(cart.total)}
+                </span>
+              </div>
 
               {cart.items.map((item) => (
-                <div
-                  key={item.productId}
-                  className="flex flex-wrap items-center gap-4 border-b border-divider px-4 py-4 last:border-0"
-                >
+                <div key={item.productId} className="flex items-center gap-3">
                   <img
                     src={`${BASE_URL}${item.imageUrl}`}
                     alt=""
-                    className="size-16 shrink-0 rounded-md bg-neutral-900 object-cover"
+                    className="size-12 shrink-0 rounded-md bg-neutral-900 object-cover"
                   />
 
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="truncate font-medium text-text">
+                    <span className="truncate text-body text-text">
                       {item.name}
                     </span>
                     <span className="text-xs tabular-nums text-neutral-500">
@@ -68,8 +124,8 @@ export default function CartPage() {
                     </span>
                   </div>
 
-                  {/* Quantity stepper (1 … stock) */}
-                  <div className="flex items-center rounded-md border border-divider">
+                  {/* Stepper (1 … stock) */}
+                  <div className="flex h-7 items-center rounded-md border border-divider">
                     <button
                       type="button"
                       aria-label={`Decrease ${item.name}`}
@@ -77,11 +133,11 @@ export default function CartPage() {
                         cart.setQuantity(item.productId, item.quantity - 1)
                       }
                       disabled={item.quantity <= 1}
-                      className="flex size-8 items-center justify-center text-neutral-500 hover:text-accent disabled:opacity-40"
+                      className="flex h-full w-7.5 items-center justify-center text-text hover:text-accent disabled:opacity-40"
                     >
-                      <RemoveIcon sx={{ fontSize: 16 }} />
+                      <RemoveIcon sx={{ fontSize: 13 }} />
                     </button>
-                    <span className="w-8 text-center text-sm tabular-nums text-text">
+                    <span className="flex h-full w-7.5 items-center justify-center border-x border-divider text-sm tabular-nums text-text">
                       {item.quantity}
                     </span>
                     <button
@@ -91,13 +147,13 @@ export default function CartPage() {
                         cart.setQuantity(item.productId, item.quantity + 1)
                       }
                       disabled={item.quantity >= item.stock}
-                      className="flex size-8 items-center justify-center text-neutral-500 hover:text-accent disabled:opacity-40"
+                      className="flex h-full w-7.5 items-center justify-center text-text hover:text-accent disabled:opacity-40"
                     >
-                      <AddIcon sx={{ fontSize: 16 }} />
+                      <AddIcon sx={{ fontSize: 13 }} />
                     </button>
                   </div>
 
-                  <span className="w-28 text-right font-semibold tabular-nums text-text">
+                  <span className="w-21 text-right text-body tabular-nums text-text">
                     {price.format(item.price * item.quantity)}
                   </span>
 
@@ -105,52 +161,158 @@ export default function CartPage() {
                     type="button"
                     aria-label={`Remove ${item.name}`}
                     onClick={() => cart.remove(item.productId)}
-                    className="flex size-8 items-center justify-center rounded-md text-neutral-500 hover:bg-critical-bg/50 hover:text-critical-text"
+                    className="flex size-3.5 items-center justify-center text-accent hover:text-critical-text"
                   >
-                    <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+                    <CloseIcon sx={{ fontSize: 14 }} />
                   </button>
                 </div>
               ))}
+
+              <div className="h-px bg-divider" />
+
+              {/* Payment method */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-neutral-500">Payment</span>
+                <div className="flex h-8.5 overflow-hidden rounded-md border border-divider">
+                  {(["COD", "CARD"] as const).map((m) => {
+                    const active = method === m;
+                    const Icon =
+                      m === "COD"
+                        ? PaymentsOutlinedIcon
+                        : CreditCardOutlinedIcon;
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setMethod(m)}
+                        aria-pressed={active}
+                        className={`flex items-center gap-1.5 px-3 text-sm first:border-r ${
+                          active
+                            ? "border-accent bg-cream text-accent"
+                            : "border-divider text-text hover:text-accent"
+                        }`}
+                      >
+                        <Icon sx={{ fontSize: 14 }} />
+                        {methodLabel[m]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Card fields */}
+              {method === "CARD" && (
+                <div className="flex gap-3">
+                  <label className="flex flex-1 flex-col gap-1.5">
+                    <span className="text-xs text-neutral-500">
+                      Card number
+                    </span>
+                    <input
+                      inputMode="numeric"
+                      placeholder="4539 1234 5678 9012"
+                      value={card.number}
+                      onChange={(e) => {
+                        const digits = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 16);
+                        setCard({
+                          ...card,
+                          number: digits.replace(/(\d{4})(?=\d)/g, "$1 "),
+                        });
+                      }}
+                      className={input}
+                    />
+                  </label>
+                  <label className="flex w-27.5 flex-col gap-1.5">
+                    <span className="text-xs text-neutral-500">Expiry</span>
+                    <input
+                      inputMode="numeric"
+                      placeholder="09/29"
+                      value={card.expiry}
+                      onChange={(e) => {
+                        const d = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setCard({
+                          ...card,
+                          expiry:
+                            d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d,
+                        });
+                      }}
+                      className={input}
+                    />
+                  </label>
+                  <label className="flex w-22.5 flex-col gap-1.5">
+                    <span className="text-xs text-neutral-500">CVV</span>
+                    <input
+                      inputMode="numeric"
+                      placeholder="123"
+                      value={card.cvv}
+                      onChange={(e) =>
+                        setCard({
+                          ...card,
+                          cvv: e.target.value.replace(/\D/g, "").slice(0, 3),
+                        })
+                      }
+                      className={input}
+                    />
+                  </label>
+                </div>
+              )}
             </section>
 
-            {/* Summary */}
-            <aside className="flex w-full flex-col gap-4 rounded-lg bg-surface p-5 shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)] lg:w-80 lg:shrink-0">
-              <h2 className="font-display text-h4 font-semibold text-text">
-                Order summary
-              </h2>
+            {/* Checkout */}
+            <aside
+              className={`flex w-full flex-col gap-3 p-5 lg:w-95 lg:shrink-0 ${panel}`}
+            >
+              <span className="text-kicker font-medium uppercase tracking-wider text-accent">
+                Checkout
+              </span>
+
+              <div className="flex justify-between text-sm">
+                <span className="text-neutral-500">{cart.store?.name}</span>
+                <span className="text-text">{methodLabel[method]}</span>
+              </div>
+
+              <div className="h-px bg-divider" />
 
               <div className="flex justify-between text-sm">
                 <span className="text-neutral-500">
-                  Items (<span className="tabular-nums">{cart.count}</span>)
+                  {method === "CARD" ? "Paid now by card" : "Due on delivery"}
                 </span>
-                <span className="tabular-nums text-text">
+                <span
+                  className={`tabular-nums ${method === "CARD" ? "text-accent" : "text-text"}`}
+                >
                   {price.format(cart.total)}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">Payment</span>
-                <span className="text-text">Cash on delivery</span>
-              </div>
 
-              <div className="flex justify-between border-t border-divider pt-3">
-                <span className="font-medium text-text">Total</span>
-                <span className="font-semibold tabular-nums text-text">
+              <div className="flex justify-between text-body">
+                <span className="text-text">
+                  Items (<span className="tabular-nums">{cart.count}</span>)
+                </span>
+                <span className="font-medium tabular-nums text-text">
                   {price.format(cart.total)}
                 </span>
               </div>
 
               <button
                 type="button"
-                disabled
-                // Checkout (POST /api/customer/orders) comes in the next step
-                className="flex h-10 items-center justify-center rounded-md bg-accent text-sm font-medium text-cream hover:bg-accent-300 disabled:opacity-60"
+                onClick={() => placeOrder.mutate()}
+                disabled={!canPlace}
+                className="flex h-9 items-center justify-center rounded-md bg-accent text-body font-medium text-cream hover:bg-accent-300 disabled:opacity-60"
               >
-                Place order
+                {placeOrder.isPending ? "Placing order…" : "Place order"}
               </button>
 
+              {placeOrder.isError && (
+                <p className="rounded-md bg-critical-bg px-3 py-2 text-xs text-critical-text">
+                  {placeOrder.error.message}
+                </p>
+              )}
+
               <p className="text-2xs leading-normal text-neutral-500">
-                You pay when the order arrives. Receiving your orders keeps your
-                commitment score high.
+                Your score at this moment is attached to the order as a
+                snapshot. Paying by card raises it, because a prepaid order
+                can&apos;t be refused on arrival.
               </p>
             </aside>
           </div>
