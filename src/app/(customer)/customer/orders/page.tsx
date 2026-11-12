@@ -8,34 +8,6 @@ import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import ChevronRightIcon from "@mui/icons-material/ChevronRightRounded";
 import { api, BASE_URL } from "@/src/lib/api";
 
-type OrderStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "OUT_FOR_DELIVERY"
-  | "DELIVERED"
-  | "REFUSED"
-  | "REJECTED"
-  | "CANCELLED";
-
-type Order = {
-  id: number;
-  storeId: number;
-  storeName: string;
-  status: OrderStatus;
-  paymentMethod: "COD" | "CARD";
-  delayed: boolean;
-  total: number;
-  createdAt: string;
-  closedAt: string | null;
-  items: {
-    productId: number;
-    name: string;
-    imageUrl: string;
-    quantity: number;
-    unitPrice: number;
-  }[];
-};
-
 type Filter = "ALL" | "ACTIVE" | "COMPLETED" | "CANCELLED";
 
 const ACTIVE: OrderStatus[] = ["PENDING", "CONFIRMED", "OUT_FOR_DELIVERY"];
