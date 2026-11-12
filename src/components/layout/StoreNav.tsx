@@ -16,7 +16,7 @@ type StoreMe = {
 };
 
 const links = [
-  { href: "/store", label: "Orders" },
+  { href: "/store/orders", label: "Orders" },
   { href: "/store/products", label: "Products" },
   { href: "/store/insights", label: "Insights" },
   { href: "/store/settings", label: "Settings" },
