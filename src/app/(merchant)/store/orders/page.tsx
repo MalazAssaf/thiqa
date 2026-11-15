@@ -336,7 +336,6 @@ export default function IncomingOrdersPage() {
       (o) => filter === "ALL" || riskOf(o.scoreAtOrder) === filter,
     ) ?? [];
 
-  // Default selection on desktop: first pending order, else the first order
   useEffect(() => {
     if (orders && selectedId === null && orders.length > 0) {
       setSelectedId(
@@ -350,7 +349,7 @@ export default function IncomingOrdersPage() {
   function select(id: number) {
     setSelectedId(id);
     action.reset();
-    setSheetOpen(true); // only visible below lg
+    setSheetOpen(true);
   }
 
   const detail = selected && (
@@ -397,8 +396,8 @@ export default function IncomingOrdersPage() {
               {/* Risk filter */}
               <div className="flex items-center gap-3">
                 <span className="text-sm text-neutral-500">Risk</span>
-                <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="flex h-[34px] w-max overflow-hidden rounded-md border border-divider bg-surface">
+                <div className="overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
+                  <div className="flex h-8.5 w-max overflow-hidden rounded-md border border-divider bg-surface">
                     {filterKeys.map((k) => {
                       const active = filter === k;
                       return (
@@ -522,7 +521,7 @@ export default function IncomingOrdersPage() {
 
             {/* Desktop detail */}
             <aside
-              className={`sticky top-6 hidden w-[380px] shrink-0 lg:block ${panel}`}
+              className={`sticky top-6 hidden w-95 shrink-0 lg:block ${panel}`}
             >
               {detail}
             </aside>
