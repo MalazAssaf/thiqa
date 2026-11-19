@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { api } from "@/src/lib/api";
+import { useCart } from "../cart/CartProvider";
 
 type Props = {
   redirectTo?: string;
@@ -16,10 +17,12 @@ export default function LogoutButton({
 }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const cart = useCart();
 
   const logout = useMutation({
     mutationFn: () => api("/api/auth/logout", { method: "POST" }),
     onSettled: () => {
+      cart.clear();
       queryClient.clear();
       router.push(redirectTo);
       router.refresh();
