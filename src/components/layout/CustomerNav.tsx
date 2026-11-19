@@ -9,12 +9,18 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutButton from "../auth/LogoutButton";
 import { useCart } from "../cart/CartProvider";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/src/lib/api";
 
 const links = [
   { label: "Stores", href: "/customer/stores" },
   { label: "My orders", href: "/customer/orders" },
   { label: "My score", href: "/customer/score" },
 ];
+
+type CustomerMe = {
+  fullName: string;
+};
 
 const pill =
   "flex items-center gap-1.5 rounded-[7px] border px-3 py-1.75 text-sm text-cream";
@@ -26,6 +32,11 @@ export default function CustomerNav() {
   const { count: cartCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+
+  const { data: customer } = useQuery({
+    queryKey: ["customer", "me"],
+    queryFn: () => api<CustomerMe>("/api/customer/me"),
+  });
 
   const isActive = (href: string) => pathname.startsWith(href);
 
@@ -85,8 +96,8 @@ export default function CustomerNav() {
                 : "border-transparent hover:bg-cream/8"
             }`}
           >
-            <span className="flex size-7 items-center justify-center rounded-full bg-accent2-500 text-3xs font-medium text-accent-100">
-              MA
+            <span className="flex size-7 items-center justify-center rounded-full bg-accent2-500 text-3xs font-medium text-accent-100 uppercase">
+              {customer?.fullName.slice(0, 2)}
             </span>
             <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
           </button>
