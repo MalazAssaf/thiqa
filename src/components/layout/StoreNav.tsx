@@ -103,8 +103,8 @@ export default function StoreNav() {
               className={`size-2 rounded-full ${store.autoReject ? "bg-accent-2" : "bg-neutral-600"}`}
             />
             {store.autoReject
-              ? `Auto-reject below ${store.rejectThreshold}`
-              : "Auto-reject off"}
+              ? `COD lock below ${store.rejectThreshold}`
+              : "COD lock off"}
           </Link>
         )}
 

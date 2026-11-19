@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CloseIcon from "@mui/icons-material/Close";
@@ -37,6 +37,20 @@ export default function CartPage() {
   const [method, setMethod] = useState<PaymentMethod>("COD");
   const [card, setCard] = useState({ number: "", expiry: "", cvv: "" });
 
+  const { data: codAllowed = true } = useQuery({
+    queryKey: ["cod-allowed", cart.store?.id],
+    queryFn: () =>
+      api<boolean>(
+        `/api/customer/orders/cod-allowed?storeId=${cart.store!.id}`,
+      ),
+    enabled: !!cart.store,
+  });
+
+  // Switch to card automatically when COD is locked
+  useEffect(() => {
+    if (!codAllowed) setMethod("CARD");
+  }, [codAllowed]);
+
   // Card details are checked here and never sent to the backend
   const cardValid =
     card.number.replace(/\s/g, "").length === 16 &&
@@ -45,7 +59,7 @@ export default function CartPage() {
 
   const placeOrder = useMutation({
     mutationFn: () =>
-      api<{ id: number }>("/api/customer/orders", {
+      api<{ id: number; status: string }>("/api/customer/orders", {
         method: "POST",
         body: JSON.stringify({
           storeId: cart.store?.id,
@@ -65,7 +79,7 @@ export default function CartPage() {
   const canPlace =
     cart.items.length > 0 &&
     !placeOrder.isPending &&
-    (method === "COD" || cardValid);
+    (method === "COD" ? codAllowed : cardValid);
 
   return (
     <main className="min-h-[calc(100dvh-68px)] bg-bg pb-16">
@@ -190,6 +204,7 @@ export default function CartPage() {
                         key={m}
                         type="button"
                         onClick={() => setMethod(m)}
+                        disabled={m === "COD" && !codAllowed}
                         aria-pressed={active}
                         className={`flex items-center justify-center gap-1.5 whitespace-nowrap px-3 text-sm  ${
                           active
@@ -204,6 +219,14 @@ export default function CartPage() {
                   })}
                 </div>
               </div>
+
+              {!codAllowed && (
+                <p className="rounded-md bg-warn-bg px-3 py-2 text-xs text-warn-text">
+                  Cash on delivery isn&apos;t available from this store for your
+                  account. Pay by card to place the order. Prepaid orders also
+                  raise your score.
+                </p>
+              )}
 
               {/* Card fields */}
               {method === "CARD" && (
