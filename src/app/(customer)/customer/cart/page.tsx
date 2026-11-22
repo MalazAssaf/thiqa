@@ -12,8 +12,19 @@ import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import { useCart } from "@/src/components/cart/CartProvider";
 import { api, BASE_URL } from "@/src/lib/api";
+import { cities } from "@/src/data/cities";
 
 type PaymentMethod = "COD" | "CARD";
+
+type Address = {
+  id: number;
+  label: string;
+  city: string;
+  details: string;
+  defaultAddress: boolean;
+};
+
+const cityLabel = (v: string) => cities.find((c) => c.value === v)?.label ?? v;
 
 const price = new Intl.NumberFormat("en-SA", {
   style: "currency",
@@ -36,6 +47,18 @@ export default function CartPage() {
 
   const [method, setMethod] = useState<PaymentMethod>("COD");
   const [card, setCard] = useState({ number: "", expiry: "", cvv: "" });
+  const [pickedAddressId, setPickedAddressId] = useState<number | null>(null);
+
+  const { data: addresses = [], isLoading: addressesLoading } = useQuery({
+    queryKey: ["customer", "addresses"],
+    queryFn: () => api<Address[]>("/api/customer/addresses"),
+  });
+
+  // The customer's pick, otherwise the default address
+  const addressId =
+    addresses.find((a) => a.id === pickedAddressId)?.id ??
+    addresses.find((a) => a.defaultAddress)?.id ??
+    null;
 
   const { data: codAllowed = true } = useQuery({
     queryKey: ["cod-allowed", cart.store?.id],
@@ -64,6 +87,7 @@ export default function CartPage() {
         body: JSON.stringify({
           storeId: cart.store?.id,
           paymentMethod: method,
+          addressId,
           items: cart.items.map((i) => ({
             productId: i.productId,
             quantity: i.quantity,
@@ -78,6 +102,7 @@ export default function CartPage() {
 
   const canPlace =
     cart.items.length > 0 &&
+    addressId !== null &&
     !placeOrder.isPending &&
     (method === "COD" ? codAllowed : cardValid);
 
@@ -294,6 +319,47 @@ export default function CartPage() {
               <span className="text-kicker font-medium uppercase tracking-wider text-accent">
                 Checkout
               </span>
+
+              {/* Deliver to */}
+              <span className="text-xs text-neutral-500">Deliver to</span>
+              {addressesLoading ? (
+                <div className="h-10 animate-pulse rounded-md bg-neutral-900" />
+              ) : addresses.length === 0 ? (
+                <p className="rounded-md bg-warn-bg px-3 py-2 text-xs text-warn-text">
+                  Add a delivery address to place the order.{" "}
+                  <Link
+                    href="/customer/profile"
+                    className="font-medium underline"
+                  >
+                    Add address
+                  </Link>
+                </p>
+              ) : (
+                <div role="radiogroup" className="flex flex-col gap-2.5">
+                  {addresses.map((a) => (
+                    <label
+                      key={a.id}
+                      className="flex cursor-pointer items-start gap-2"
+                    >
+                      <input
+                        type="radio"
+                        name="address"
+                        checked={a.id === addressId}
+                        onChange={() => setPickedAddressId(a.id)}
+                        className="mt-0.5 size-4 shrink-0 accent-accent"
+                      />
+                      <span className="flex min-w-0 flex-col">
+                        <span className="text-body text-text">{a.label}</span>
+                        <span className="truncate text-xs text-neutral-500">
+                          {a.details}, {cityLabel(a.city)}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              <div className="h-px bg-divider" />
 
               <div className="flex justify-between gap-3 text-sm">
                 <span className="truncate text-neutral-500">

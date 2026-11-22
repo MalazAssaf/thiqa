@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import CloseIcon from "@mui/icons-material/Close";
 import { api, BASE_URL } from "@/src/lib/api";
+import { cities } from "@/src/data/cities";
 
 type Risk = "HIGH" | "MODERATE" | "LOW" | "RISKY" | "NONE";
 type RiskFilter = "ALL" | Exclude<Risk, "NONE">;
@@ -18,6 +19,8 @@ const day = new Intl.DateTimeFormat("en-GB", {
   year: "numeric",
 });
 const orderCode = (id: number) => `ORD-${String(id).padStart(4, "0")}`;
+const cityLabel = (v: string | null) =>
+  v ? (cities.find((c) => c.value === v)?.label ?? v) : "";
 
 const panel =
   "rounded-lg bg-surface shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)]";
@@ -258,6 +261,7 @@ function OrderDetail({
             "Payment",
             o.paymentMethod === "COD" ? "Cash on delivery" : "Card, paid",
           ],
+          ["City", cityLabel(o.deliveryCity) || "—"],
           ["Placed", day.format(new Date(o.createdAt))],
           ...(o.closedAt ? [["Closed", day.format(new Date(o.closedAt))]] : []),
         ].map(([label, value]) => (
@@ -266,6 +270,18 @@ function OrderDetail({
             <span className="tabular-nums text-text">{value}</span>
           </div>
         ))}
+        {o.deliveryDetails ? (
+          <div className="flex justify-between gap-4 text-sm">
+            <span className="text-neutral-500">Address</span>
+            <span className="text-right text-text">{o.deliveryDetails}</span>
+          </div>
+        ) : (
+          o.status === "PENDING" && (
+            <p className="text-2xs text-neutral-500">
+              The full address appears after you accept the order.
+            </p>
+          )
+        )}
         <div className="flex items-center justify-between gap-4 text-sm">
           <span className="text-neutral-500">Status</span>
           <Tag label={s.label} cls={s.cls} />
@@ -446,6 +462,8 @@ export default function IncomingOrdersPage() {
                               </span>
                               <span className="text-xs text-neutral-500">
                                 {o.customerLabel} ·{" "}
+                                {o.deliveryCity &&
+                                  `${cityLabel(o.deliveryCity)} · `}
                                 {day.format(new Date(o.createdAt))}
                               </span>
                             </div>

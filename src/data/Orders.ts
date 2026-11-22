@@ -8,6 +8,9 @@ type Order = {
   total: number;
   createdAt: string;
   closedAt: string | null;
+  deliveryLabel: string | null;
+  deliveryCity: string | null;
+  deliveryDetails: string | null;
   items: {
     productId: number;
     name: string;
@@ -36,6 +39,8 @@ type StoreOrder = {
   total: number;
   createdAt: string;
   closedAt: string | null;
+  deliveryCity: string | null;
+  deliveryDetails: string | null;
   items: {
     productId: number;
     name: string;

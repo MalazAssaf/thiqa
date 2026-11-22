@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackRounded";
 import { api, BASE_URL } from "@/src/lib/api";
+import { cities } from "@/src/data/cities";
 
 type StageState = "done" | "current" | "waiting" | "failed";
 type Stage = { title: string; sub: string; state: StageState; warn?: boolean };
@@ -21,6 +22,8 @@ const day = new Intl.DateTimeFormat("en-GB", {
 });
 const fmt = (iso: string | null) => (iso ? day.format(new Date(iso)) : "");
 const orderCode = (id: number) => `ORD-${String(id).padStart(4, "0")}`;
+const cityLabel = (v: string | null) =>
+  v ? (cities.find((c) => c.value === v)?.label ?? v) : "";
 
 const panel =
   "rounded-lg bg-surface shadow-[0_1px_2px_0_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.07)]";
@@ -289,6 +292,18 @@ export default function TrackOrderPage() {
                       </span>
                     </div>
                   ))}
+
+                  {o.deliveryDetails && (
+                    <div className="flex justify-between gap-4 border-t border-divider pt-2.5 text-sm">
+                      <span className="text-neutral-500">Deliver to</span>
+                      <span className="flex flex-col items-end text-right">
+                        <span className="text-text">{o.deliveryLabel}</span>
+                        <span className="text-xs text-neutral-500">
+                          {o.deliveryDetails}, {cityLabel(o.deliveryCity)}
+                        </span>
+                      </span>
+                    </div>
+                  )}
                 </section>
 
                 <section className={`flex flex-col gap-3 p-5 ${panel}`}>
