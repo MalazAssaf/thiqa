@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/src/lib/api";
+import { category } from "@/src/data/score";
 
 type ScoreBreakdown = {
   score: number | null;
@@ -34,32 +35,6 @@ const panel =
 const kicker = "text-kicker font-medium uppercase tracking-wider text-accent";
 const tagBase =
   "inline-flex h-[22px] shrink-0 items-center whitespace-nowrap rounded-md px-2 text-2xs font-medium";
-
-function category(score: number) {
-  if (score >= 80)
-    return {
-      label: "High",
-      cls: "bg-accent2-800 text-accent2-100",
-      bar: "bg-accent-2",
-    };
-  if (score >= 60)
-    return {
-      label: "Moderate",
-      cls: "bg-accent-800 text-accent-100",
-      bar: "bg-accent",
-    };
-  if (score >= 40)
-    return {
-      label: "Low",
-      cls: "bg-warn-bg text-warn-text",
-      bar: "bg-warn-text",
-    };
-  return {
-    label: "Risky",
-    cls: "bg-critical-bg text-critical-text",
-    bar: "bg-critical-text",
-  };
-}
 
 function outcome(o: Order) {
   if (o.status === "DELIVERED" && o.delayed)
