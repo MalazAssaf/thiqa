@@ -61,7 +61,10 @@ export default function StoreNav() {
     <header className="sticky top-0 z-40 bg-section-base">
       <div className="mx-auto flex h-17 w-full max-w-360 items-center gap-4 px-4 sm:px-6 lg:px-15">
         {/* Brand */}
-        <Link href="/store" className="flex shrink-0 items-baseline gap-2.25">
+        <Link
+          href="/store/orders"
+          className="flex shrink-0 items-baseline gap-2.25"
+        >
           <span className="font-display text-xl font-semibold text-surface">
             Thiqa
           </span>
